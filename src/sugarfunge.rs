@@ -484,8 +484,8 @@ pub async fn calculate_and_update_storage_rewards(
         let storer_manifests = get_manifests_storer_data(Some(manifest.pool_id), Some(seeded.account.clone()), None).await;
         if let Ok (storer_manifest) = storer_manifests{
             for storer_data in storer_manifest.manifests.iter(){
-                let mut updated_data = ManifestStorageData {
-                    account: storer_data.account.clone(),
+                let mut updated_data = UpdateManifestInput {
+                    seed: seeded.seed.clone(),
                     cid: storer_data.cid.clone(),
                     pool_id: storer_data.pool_id,
                     active_cycles: storer_data.active_cycles,
@@ -512,7 +512,7 @@ pub async fn calculate_and_update_storage_rewards(
                         }
                     } else {
                         // If the verification of the IPFS File failed {NUMBER_CYCLES_TO_RESET} times, the active_days are reset to 0
-                        if storer_data.missed_cycles == NUMBER_CYCLES_TO_RESET {
+                        if storer_data.missed_cycles >= NUMBER_CYCLES_TO_RESET {
                             updated_data.missed_cycles = 0;
                             updated_data.active_days = 0;
                         } else {
@@ -521,16 +521,7 @@ pub async fn calculate_and_update_storage_rewards(
                         }
                     }
                 // Updated the values of the Storage Data in the Manifest
-                let manifest_updated = updated_storage_data(
-                    seeded.seed.clone(),
-                    manifest.manifest_data.manifest_metadata.clone(),
-                    manifest.pool_id,
-                    updated_data,
-                )
-                .await;
-                if let Ok(manifest_updated) = manifest_updated {
-                    info!("Here manifest_update: {:#?}", manifest_updated);
-                }
+                let _manifest_updated = updated_storage_data(updated_data).await;
                 }
             }
         }
@@ -541,21 +532,11 @@ pub async fn calculate_and_update_storage_rewards(
 }
 
 async fn updated_storage_data(
-    seed: Seed,
-    manifest_metadata: serde_json::Value,
-    pool_id: PoolId,
-    manifest_storage_data: ManifestStorageData,
+    input: UpdateManifestInput
 ) -> Result<ManifestUpdatedOutput, RequestError> {
     let manifest: Result<fula::ManifestUpdatedOutput, _> = req(
         "fula/manifest/update",
-        fula::UpdateManifestInput {
-            seed,
-            manifest_metadata,
-            pool_id,
-            active_days: manifest_storage_data.active_days,
-            active_cycles: manifest_storage_data.active_cycles,
-            missed_cycles: manifest_storage_data.missed_cycles,
-        },
+        input
     )
     .await;
     return manifest;
