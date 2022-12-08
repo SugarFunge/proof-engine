@@ -5961,7 +5961,7 @@ dependencies = [
 [[package]]
 name = "sugarfunge-api-types"
 version = "0.1.0"
-source = "git+https://github.com/functionland/sugarfunge-api.git?rev=cabffbdd784b94b99cef68fe551b7f1f4d2853cc#cabffbdd784b94b99cef68fe551b7f1f4d2853cc"
+source = "git+https://github.com/functionland/sugarfunge-api.git?rev=d303041d3e45da81837d1b447482be154aa7313a#d303041d3e45da81837d1b447482be154aa7313a"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
